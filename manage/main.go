@@ -5,7 +5,9 @@ import (
 	"os"
 	"os/signal"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/valyala/fasthttp"
+	"github.com/xiaofengshuyu/vpn-manager/manage/common"
 	"github.com/xiaofengshuyu/vpn-manager/manage/router"
 )
 
@@ -16,17 +18,18 @@ func init() {
 func main() {
 
 	fmt.Println("server start")
-
 	var (
 		errc = make(chan error)
 	)
 	go func() {
+		common.Logger.Info("server listen 8086")
 		err := fasthttp.ListenAndServe(":8086", router.VPNManageRouter)
 		if err != nil {
 			errc <- err
 		}
 	}()
 	go func() {
+		common.Logger.Info("server listen 8087")
 		err := fasthttp.ListenAndServe(":8087", router.UserAccessRouter)
 		if err != nil {
 			errc <- err

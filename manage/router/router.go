@@ -3,10 +3,12 @@ package router
 import (
 	"encoding/base64"
 	"fmt"
+	"runtime/debug"
 	"strings"
 
 	"github.com/buaazp/fasthttprouter"
 	"github.com/valyala/fasthttp"
+	"github.com/xiaofengshuyu/vpn-manager/manage/common"
 	"github.com/xiaofengshuyu/vpn-manager/manage/config"
 	"github.com/xiaofengshuyu/vpn-manager/manage/user"
 )
@@ -19,14 +21,20 @@ var (
 )
 
 func init() {
+	// init user handler
+	userHandler := &user.Handler{}
+	userHandler.UserService = &user.BaseUserService{}
+
 	// internal toute config
 	internalRouter := fasthttprouter.New()
-	internalRouter.POST("/manage/user", user.InsertUser)
-	VPNManageRouter = BasicAuth(internalRouter.Handler, config.AppConfig.AuthUser, config.AppConfig.AuthPassword)
+	internalRouter.POST("/api/manage/user", user.InsertUser)
+	VPNManageRouter = RecoverWrap(BasicAuth(internalRouter.Handler, config.AppConfig.Auth.User, config.AppConfig.Auth.Password))
 
 	// external router config
 	externalRouter := fasthttprouter.New()
-	UserAccessRouter = externalRouter.Handler
+	// user register
+	externalRouter.POST("/api/register", userHandler.Register)
+	UserAccessRouter = RecoverWrap(externalRouter.Handler)
 }
 
 // basicAuth returns the username and password provided in the request's
@@ -74,5 +82,21 @@ func BasicAuth(h fasthttp.RequestHandler, requiredUser, requiredPassword string)
 		// Request Basic Authentication otherwise
 		ctx.Error(fasthttp.StatusMessage(fasthttp.StatusUnauthorized), fasthttp.StatusUnauthorized)
 		ctx.Response.Header.Set("WWW-Authenticate", "Basic realm=Restricted")
+	})
+}
+
+// RecoverWrap is a middleware for fasthttp handler
+func RecoverWrap(h fasthttp.RequestHandler) fasthttp.RequestHandler {
+	return fasthttp.RequestHandler(func(ctx *fasthttp.RequestCtx) {
+		var msg string
+		defer func() {
+			r := recover()
+			if r != nil {
+				common.Logger.Error(r)
+				msg = fmt.Sprintf("%v\n%s", r, debug.Stack())
+				ctx.Error(msg, fasthttp.StatusInternalServerError)
+			}
+		}()
+		h(ctx)
 	})
 }
