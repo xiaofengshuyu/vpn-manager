@@ -92,8 +92,8 @@ func RecoverWrap(h fasthttp.RequestHandler) fasthttp.RequestHandler {
 		defer func() {
 			r := recover()
 			if r != nil {
-				common.Logger.Error(r)
 				msg = fmt.Sprintf("%v\n%s", r, debug.Stack())
+				common.Logger.Error(msg)
 				ctx.Error(msg, fasthttp.StatusInternalServerError)
 			}
 		}()

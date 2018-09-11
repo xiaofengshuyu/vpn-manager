@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/jinzhu/gorm"
-	"gopkg.in/go-playground/validator.v9"
 )
 
 // user status
@@ -31,9 +30,9 @@ func (CommonUser) TableName() string {
 	return "t_vpn_common_user"
 }
 
-// Valid is check user
-func (u *CommonUser) Valid(validate *validator.Validate) error {
-	return validate.Struct(u)
+// Validate is check user
+func (u *CommonUser) Validate() string {
+	return TranslateAll(*u)
 }
 
 // UserVPNConfig user vpn config

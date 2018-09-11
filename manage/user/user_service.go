@@ -35,7 +35,7 @@ func (s *BaseUserService) RegisterUser(ctx context.Context, user *models.CommonU
 	}(&err)
 	var users []*models.CommonUser
 
-	err = db.Where(models.CommonUser{Email: user.Email}).Find(users).Error
+	err = db.Where(&models.CommonUser{Email: user.Email}).Find(&users).Error
 	if err != nil {
 		common.NewDBAccessError(err)
 		return
