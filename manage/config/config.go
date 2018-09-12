@@ -3,6 +3,10 @@ package config
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
+	"log"
+
+	"gopkg.in/yaml.v2"
 )
 
 // rune mode
@@ -21,6 +25,7 @@ type Config struct {
 	Mode  string
 	Auth  AuthConfig
 	MYSQL MYSQLConfig
+	SMTP  SMTPConfig
 }
 
 // AuthConfig is auth to api config
@@ -51,6 +56,14 @@ func (c MYSQLConfig) BuildClientURI() string {
 		c.DB,
 		"Asia%2FShanghai",
 	)
+}
+
+// SMTPConfig is smpt server config
+type SMTPConfig struct {
+	User     string
+	Password string
+	Host     string
+	Port     int
 }
 
 func init() {
@@ -86,9 +99,38 @@ func init() {
 	flag.IntVar(&mysqlMaxIdle, "mysql.maxidle", 4, "mysql max idle")
 	flag.IntVar(&mysqlMaxConnect, "mysql.maxconnect", 200, "mysql max connect")
 	flag.IntVar(&mysqlLifeTime, "mysql.lifetime", 0, "mysql life time")
-	// check
+
+	var (
+		smtpUser     string
+		smtpPassword string
+		smtpHost     string
+		smtpPort     int
+	)
+	flag.StringVar(&smtpUser, "smtp.user", "your@example.com", "email user.")
+	flag.StringVar(&smtpPassword, "smtp.password", "pwd", "email password.")
+	flag.StringVar(&smtpHost, "smtp.host", "stmp.163.com", "smtp server host.")
+	flag.IntVar(&smtpPort, "smtp.port", 25, "smtp server port")
+
+	var (
+		configFile string
+	)
+
+	flag.StringVar(&configFile, "config", "", "config file.")
 
 	flag.Parse()
+	// check
+
+	if configFile != "" {
+		data, err := ioutil.ReadFile(configFile)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		err = yaml.Unmarshal(data, &AppConfig)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		return
+	}
 	AppConfig = Config{
 		Mode: mode,
 		Auth: AuthConfig{
@@ -104,6 +146,12 @@ func init() {
 			MaxIdle:     mysqlMaxIdle,
 			MaxConnect:  mysqlMaxConnect,
 			MaxLifeTime: mysqlLifeTime,
+		},
+		SMTP: SMTPConfig{
+			User:     smtpUser,
+			Password: smtpPassword,
+			Host:     smtpHost,
+			Port:     smtpPort,
 		},
 	}
 }

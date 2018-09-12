@@ -6,4 +6,8 @@ go run main.go \
   -mysql.user=demo \
   -mysql.password=demo \
   -mysql.db=demo \
+  -smtp.user=your@example.com \
+  -smtp.password=pwd \
+  -smtp.host=smtp.server.com \
+  -smtp.port=25 \  
   -mode=dev

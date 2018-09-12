@@ -18,5 +18,4 @@ func initDB() {
 	if err != nil {
 		Logger.Error(err)
 	}
-
 }
