@@ -2,6 +2,7 @@ package user
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/valyala/fasthttp"
 	"github.com/xiaofengshuyu/vpn-manager/manage/common"
@@ -18,6 +19,7 @@ type RegisterRequest struct {
 
 func userRegister(ctx *fasthttp.RequestCtx) (user *models.CommonUser, err error) {
 	req := new(models.CommonUser)
+	fmt.Print(req.UserName)
 	err = json.Unmarshal(ctx.PostBody(), req)
 	if err != nil {
 		err = common.NewRequestParamsDecodeError(err)
