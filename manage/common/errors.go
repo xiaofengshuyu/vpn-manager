@@ -187,6 +187,8 @@ func GetErrorInfo(err error) (code int, msg string) {
 		return ErrorCodeRequestParamsValue, t.Error()
 	case *DBAccessError:
 		return t.ErrorCode, t.Error()
+	case *InsertRepeatError:
+		return t.ErrorCode, t.Error()
 	case *NotRegisterError:
 		return t.ErrorCode, t.Error()
 	case *ResourcesNotFoundError:

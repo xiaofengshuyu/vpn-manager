@@ -17,7 +17,6 @@ func init() {
 
 func main() {
 
-	fmt.Println("server start")
 	var (
 		errc = make(chan error)
 	)

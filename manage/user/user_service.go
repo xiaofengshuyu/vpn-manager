@@ -16,7 +16,7 @@ type Service interface {
 	// GetUser()
 	// GetUserByID()
 	RegisterUser(ctx context.Context, user *models.CommonUser) (err error)
-	RegisterCheck()
+	RegisterCheck(ctx context.Context, user *models.CommonUser) (err error)
 }
 
 // BaseUserService is a implements for user service
@@ -35,7 +35,7 @@ func (s *BaseUserService) RegisterUser(ctx context.Context, user *models.CommonU
 	}(&err)
 	var users []*models.CommonUser
 
-	err = db.Where(models.CommonUser{Email: user.Email}).Find(users).Error
+	err = db.Where(&models.CommonUser{Email: user.Email}).Find(&users).Error
 	if err != nil {
 		common.NewDBAccessError(err)
 		return
@@ -58,10 +58,13 @@ func (s *BaseUserService) RegisterUser(ctx context.Context, user *models.CommonU
 	if err != nil {
 		err = common.NewDBAccessError(err)
 	}
+	// send an email
+
 	return
 }
 
 // RegisterCheck check register info
-func (s *BaseUserService) RegisterCheck() {
+func (s *BaseUserService) RegisterCheck(ctx context.Context, user *models.CommonUser) (err error) {
+	// check user and vertify code
 	return
 }
