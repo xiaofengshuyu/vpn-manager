@@ -9,6 +9,8 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
       - "3306:3306"
+    volumes:
+     - ~/data/docker-mysql:/var/lib/mysql
 
   manage:
     build: ./manage
