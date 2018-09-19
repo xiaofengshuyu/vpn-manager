@@ -10,7 +10,7 @@ import (
 
 // Service is a interface for order service
 type Service interface {
-	GetProduct(ctx context.Context) (products *models.Product, err error)
+	GetProduct(ctx context.Context) (products []*models.Product, err error)
 	CommitAnOrder(ctx context.Context, userOrder *models.Order) (err error)
 }
 

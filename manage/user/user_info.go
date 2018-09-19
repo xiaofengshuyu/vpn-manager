@@ -13,5 +13,5 @@ func TokenCheck(token string) (existed bool, recorder *models.UserLoginRecorder)
 	if err != nil {
 		return false, nil
 	}
-	return
+	return true, recorder
 }

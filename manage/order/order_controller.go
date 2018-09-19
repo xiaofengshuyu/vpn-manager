@@ -5,7 +5,6 @@ import (
 
 	"github.com/valyala/fasthttp"
 	"github.com/xiaofengshuyu/vpn-manager/manage/common"
-	"github.com/xiaofengshuyu/vpn-manager/manage/models"
 )
 
 // Handler is order handler
@@ -23,7 +22,11 @@ func (h *Handler) GetProduct(ctx *fasthttp.RequestCtx) {
 
 // CommitOrder commit an order
 func (h *Handler) CommitOrder(ctx *fasthttp.RequestCtx) {
-	var userOrder models.Order
-	err := h.OrderService.CommitAnOrder(context.Background(), &userOrder)
+	userOrder, err := commitOrderDecode(ctx)
+	if err != nil {
+		h.WriteJSON(ctx, nil, err)
+		return
+	}
+	err = h.OrderService.CommitAnOrder(context.Background(), &userOrder)
 	h.WriteJSON(ctx, nil, err)
 }

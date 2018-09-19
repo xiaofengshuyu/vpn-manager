@@ -62,11 +62,13 @@ func VPNUserFilter(h fasthttp.RequestHandler) fasthttp.RequestHandler {
 		// get token
 		token := ctx.Request.Header.Peek("token")
 		// check token
-		if ok, recorder := user.TokenCheck(string(token)); ok {
-			common.GlobalSession.SetUser(ctx.ID(), recorder.User)
-			h(ctx)
-			common.GlobalSession.Delete(ctx.ID())
-			return
+		if len(token) > 0 {
+			if ok, recorder := user.TokenCheck(string(token)); ok {
+				common.GlobalSession.SetUser(ctx.ID(), recorder.User)
+				h(ctx)
+				common.GlobalSession.Delete(ctx.ID())
+				return
+			}
 		}
 		ctx.Error(fasthttp.StatusMessage(fasthttp.StatusUnauthorized), fasthttp.StatusUnauthorized)
 	})

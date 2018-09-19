@@ -2,10 +2,8 @@ package user
 
 import (
 	"crypto/md5"
-	"encoding/hex"
 	"errors"
 	"fmt"
-	"math"
 	"math/rand"
 	"time"
 
@@ -29,6 +27,6 @@ func makeVertifyCode() string {
 }
 
 func makeToken(base string) string {
-	str := fmt.Sprintf("%s_%d", base, rand.Intn(math.MaxInt64))
-	return hex.EncodeToString(md5.New().Sum([]byte(str)))
+	str := fmt.Sprintf("%s_%d", base, random.Intn(1<<30))
+	return fmt.Sprintf("%x", md5.Sum([]byte(str)))
 }

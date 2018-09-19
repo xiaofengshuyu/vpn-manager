@@ -14,7 +14,7 @@ type ConfigHandler struct {
 }
 
 // GetVPNConfig get personal vpn config
-func (h *ConfigHandler) GetVPNConfig() (ctx *fasthttp.RequestCtx) {
+func (h *ConfigHandler) GetVPNConfig(ctx *fasthttp.RequestCtx) {
 	user, ok := common.GlobalSession.GetUser(ctx.ID())
 	if !ok {
 		h.WriteJSON(ctx, nil, common.NewNotLoginError())

@@ -165,6 +165,10 @@ func (s *BaseUserService) Login(ctx context.Context, username, password string) 
 		err = common.NewRequestParamsValueError("password error")
 		return
 	}
+	if user.Status != models.UserStatusEnable {
+		err = common.NewNotRegisterError()
+		return
+	}
 	// write login info to recorder
 	now := time.Now()
 	token := makeToken(user.Email)
@@ -176,7 +180,23 @@ func (s *BaseUserService) Login(ctx context.Context, username, password string) 
 		LastLogin:    now,
 		EndTime:      now.AddDate(0, 1, 0),
 	}
-	err = db.Create(recorder).Error
+	// check is existed
+	old := &models.UserLoginRecorder{UserID: int(user.ID)}
+	err = db.Where(old).First(old).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			err = db.Create(recorder).Error
+			if err != nil {
+				err = common.NewDBAccessError(err)
+				return
+			}
+			return
+		}
+		err = common.NewDBAccessError(err)
+		return
+	}
+	recorder.ID = old.ID
+	err = db.Save(recorder).Error
 	if err != nil {
 		err = common.NewDBAccessError(err)
 		return
