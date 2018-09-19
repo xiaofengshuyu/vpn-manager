@@ -17,7 +17,7 @@ type RegisterRequest struct {
 	Phone    string `json:"phone"`
 }
 
-func userRegister(ctx *fasthttp.RequestCtx) (user *models.CommonUser, err error) {
+func userRegisterDecode(ctx *fasthttp.RequestCtx) (user *models.CommonUser, err error) {
 	req := new(models.CommonUser)
 	err = json.Unmarshal(ctx.PostBody(), req)
 	if err != nil {
