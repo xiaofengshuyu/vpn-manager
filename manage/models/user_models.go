@@ -9,8 +9,8 @@ import (
 // user status
 const (
 	UserStatusDisable = iota
-	UserStatusEnable
 	UserStatusRegister
+	UserStatusEnable
 )
 
 // CommonUser user
@@ -21,7 +21,7 @@ type CommonUser struct {
 	Password    string `validate:"required"`
 	Email       string `gorm:"unique;not null" validate:"required,email"`
 	Phone       string
-	Status      int `gorm:"default:1"`
+	Status      int `gorm:"default:0"`
 	VertifyCode string
 }
 
@@ -35,9 +35,28 @@ func (u *CommonUser) Validate() string {
 	return TranslateAll(*u)
 }
 
-// UserVPNConfig user vpn config
+// UserLoginRecorder is login info
+type UserLoginRecorder struct {
+	ID           uint `gorm:"primary_key"`
+	UserID       int
+	User         CommonUser
+	Token        string
+	RefreshToken string
+	EndTime      time.Time
+	LastLogin    time.Time
+}
+
+// TableName is mysql table name
+func (UserLoginRecorder) TableName() string {
+	return "t_vpn_login_recoreder"
+}
+
+// UserVPNConfig user's vpn time config
 type UserVPNConfig struct {
 	gorm.Model
-	StartDate time.Time
-	EndDate   time.Time
+	UserID int
+	User   CommonUser
+	Hosts  []Host
+	Start  time.Time
+	End    time.Time
 }

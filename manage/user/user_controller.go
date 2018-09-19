@@ -2,7 +2,8 @@ package user
 
 import (
 	"context"
-	"fmt"
+
+	"github.com/tidwall/gjson"
 
 	"github.com/valyala/fasthttp"
 	"github.com/xiaofengshuyu/vpn-manager/manage/common"
@@ -16,7 +17,7 @@ type Handler struct {
 
 // Register user register
 func (h *Handler) Register(ctx *fasthttp.RequestCtx) {
-	req, err := userRegister(ctx)
+	req, err := userRegisterDecode(ctx)
 	if err != nil {
 		h.WriteJSON(ctx, nil, err)
 		return
@@ -25,28 +26,22 @@ func (h *Handler) Register(ctx *fasthttp.RequestCtx) {
 	h.WriteJSON(ctx, nil, err)
 }
 
-// InsertUser insert user
-func InsertUser(ctx *fasthttp.RequestCtx) {
-	//
-	fmt.Println("insert User")
-}
-
-// UpdatetUser is update user
-func UpdatetUser(ctx *fasthttp.RequestCtx) {
-	//
-}
-
-// GetUser is get all user
-func GetUser(ctx *fasthttp.RequestCtx) {
-	//
-}
-
-// DeleteUser is delete user
-func DeleteUser(ctx *fasthttp.RequestCtx) {
-	//
-}
-
-// GetUserByID is get one user
-func GetUserByID(ctx *fasthttp.RequestCtx) {
-	//
+// Login user login
+func (h *Handler) Login(ctx *fasthttp.RequestCtx) {
+	parse := gjson.ParseBytes(ctx.PostBody())
+	username := parse.Get("username").String()
+	password := parse.Get("password").String()
+	if username == "" || password == "" {
+		h.WriteJSON(ctx, nil, common.NewRequestParamsValueError("username or password is empty"))
+		return
+	}
+	recorder, err := h.UserService.Login(context.Background(), username, password)
+	if err != nil {
+		h.WriteJSON(ctx, nil, err)
+		return
+	}
+	h.WriteJSON(ctx, map[string]string{
+		"token":   recorder.Token,
+		"refresh": recorder.RefreshToken,
+	}, nil)
 }

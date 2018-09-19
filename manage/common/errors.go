@@ -4,9 +4,8 @@ import (
 	"fmt"
 
 	"github.com/jinzhu/gorm"
-	validator "gopkg.in/go-playground/validator.v9"
-
 	pkgerrors "github.com/pkg/errors"
+	validator "gopkg.in/go-playground/validator.v9"
 )
 
 // 错误码

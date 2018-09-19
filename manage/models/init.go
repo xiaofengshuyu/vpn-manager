@@ -5,8 +5,6 @@ import (
 
 	zh_locales "github.com/go-playground/locales/zh"
 	ut "github.com/go-playground/universal-translator"
-	"github.com/xiaofengshuyu/vpn-manager/manage/common"
-	"github.com/xiaofengshuyu/vpn-manager/manage/config"
 	"gopkg.in/go-playground/validator.v9"
 	zh_translations "gopkg.in/go-playground/validator.v9/translations/zh"
 )
@@ -19,24 +17,10 @@ var (
 func init() {
 	zh := zh_locales.New()
 	validate = validator.New()
-	var ok bool
-	trans, ok = ut.New(zh, zh).GetTranslator("zh")
-	if ok {
-		zh_translations.RegisterDefaultTranslations(validate, trans)
-	} else {
-		common.Logger.Error("translator zh not found")
-	}
-
-	// auto migration
-	if config.AppConfig.Mode == config.DEV {
-		common.DB.LogMode(true)
-		common.DB.Set("gorm:table_options", "engine=InnoDB").
-			Set("gorm:table_options", "charset=utf8").
-			AutoMigrate(
-				&CommonUser{},
-			)
-	}
-
+	trans, _ = ut.New(zh, zh).GetTranslator("zh")
+	zh_translations.RegisterDefaultTranslations(validate, trans)
+	/**
+	 */
 }
 
 // TranslateAll is translate validator information

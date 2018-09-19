@@ -5,7 +5,9 @@ import (
 	"strings"
 
 	"github.com/valyala/fasthttp"
+	"github.com/xiaofengshuyu/vpn-manager/manage/common"
 	"github.com/xiaofengshuyu/vpn-manager/manage/config"
+	"github.com/xiaofengshuyu/vpn-manager/manage/user"
 )
 
 // basicAuth returns the username and password provided in the request's
@@ -51,5 +53,21 @@ func BasicAuth(h fasthttp.RequestHandler) fasthttp.RequestHandler {
 		// Request Basic Authentication otherwise
 		ctx.Error(fasthttp.StatusMessage(fasthttp.StatusUnauthorized), fasthttp.StatusUnauthorized)
 		ctx.Response.Header.Set("WWW-Authenticate", "Basic realm=Restricted")
+	})
+}
+
+// VPNUserFilter is the filter for user which registered
+func VPNUserFilter(h fasthttp.RequestHandler) fasthttp.RequestHandler {
+	return fasthttp.RequestHandler(func(ctx *fasthttp.RequestCtx) {
+		// get token
+		token := ctx.Request.Header.Peek("token")
+		// check token
+		if ok, recorder := user.TokenCheck(string(token)); ok {
+			common.GlobalSession.SetUser(ctx.ID(), recorder.User)
+			h(ctx)
+			common.GlobalSession.Delete(ctx.ID())
+			return
+		}
+		ctx.Error(fasthttp.StatusMessage(fasthttp.StatusUnauthorized), fasthttp.StatusUnauthorized)
 	})
 }

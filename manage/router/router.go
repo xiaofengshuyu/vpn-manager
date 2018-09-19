@@ -21,7 +21,6 @@ func init() {
 
 	// internal toute config
 	internalRouter := fasthttprouter.New()
-	internalRouter.POST("/api/manage/user", user.InsertUser)
 	VPNManageRouter = BuildHandler(
 		internalRouter.Handler,
 		BasicAuth,
