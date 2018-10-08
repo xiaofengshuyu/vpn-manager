@@ -2,6 +2,9 @@ package order
 
 import (
 	"context"
+	"time"
+
+	"github.com/jinzhu/gorm"
 
 	"github.com/xiaofengshuyu/vpn-manager/manage/common"
 	"github.com/xiaofengshuyu/vpn-manager/manage/host"
@@ -11,7 +14,7 @@ import (
 // Service is a interface for order service
 type Service interface {
 	GetProduct(ctx context.Context) (products []*models.Product, err error)
-	CommitAnOrder(ctx context.Context, userOrder *models.Order) (err error)
+	CommitAnOrder(ctx context.Context, data string) (err error)
 }
 
 // BaseOrderService is a order service
@@ -28,7 +31,14 @@ func (s *BaseOrderService) GetProduct(ctx context.Context) (products []*models.P
 }
 
 // CommitAnOrder is create a order
-func (s *BaseOrderService) CommitAnOrder(ctx context.Context, userOrder *models.Order) (err error) {
+func (s *BaseOrderService) CommitAnOrder(ctx context.Context, data string) (err error) {
+
+	// check order from apple server
+	userOrder, err := GetOrderFromApple(data)
+	if err != nil {
+		return
+	}
+
 	db := common.DB.Begin()
 	defer func(err *error) {
 		if *err != nil {
@@ -49,12 +59,6 @@ func (s *BaseOrderService) CommitAnOrder(ctx context.Context, userOrder *models.
 		err = common.NewInsertRepeatError("the order is existed")
 		return
 	}
-	product := &models.Product{}
-	err = db.Where(&models.Product{Code: userOrder.Product.Code}).First(product).Error
-	if err != nil {
-		err = common.NewDBAccessError(err)
-		return
-	}
 	user := &models.CommonUser{}
 	err = db.Where(&models.CommonUser{Email: userOrder.User.Email}).First(user).Error
 	if err != nil {
@@ -62,24 +66,59 @@ func (s *BaseOrderService) CommitAnOrder(ctx context.Context, userOrder *models.
 		return
 	}
 
-	// check order from apple server
-	// TODO
-	GetOrderFromApple(userOrder.OrderNumber)
-
 	// write order info to db
-	userOrder.ProductID = int(product.ID)
-	userOrder.Product = *product
-	userOrder.UserID = int(user.ID)
+	userOrder.UserID = user.ID
 	userOrder.User = *user
-	err = db.Create(userOrder).Error
+	err = db.Create(&userOrder).Error
 	if err != nil {
 		err = common.NewDBAccessError(err)
 		return
 	}
 
+	// TODO
+	// update user vpn config
+	// get user current status
+	var (
+		now   = time.Now()
+		month = userOrder.Product.Duration * userOrder.Quantity
+	)
+	var currentConfig models.UserVPNConfig
+	errs := db.Where(&models.UserVPNConfig{UserID: user.ID}).First(&currentConfig).Error
+	if errs != nil {
+		if errs == gorm.ErrRecordNotFound {
+			// create an new
+			userConf := &models.UserVPNConfig{
+				UserID: user.ID,
+				Start:  now,
+				End:    now.AddDate(0, month, 0),
+			}
+			errs = db.Create(userConf).Error
+			if errs != nil {
+				err = errs
+				return
+			}
+		} else {
+			err = errs
+			return
+		}
+	} else {
+		if currentConfig.End.After(now) {
+			currentConfig.End = currentConfig.End.AddDate(0, month, 0)
+		} else {
+			currentConfig.Start = now
+			currentConfig.End = now.AddDate(0, month, 0)
+		}
+		// update
+		errs := db.Model(&currentConfig).Update("start", currentConfig.Start, "end", currentConfig.End).Error
+		if errs != nil {
+			err = errs
+			return
+		}
+	}
+
 	// write vpn config
 	go func() {
-		errs := host.AppendConfig(userOrder)
+		errs := host.AppendConfig()
 		if errs != nil {
 			common.Logger.Error(err)
 		}

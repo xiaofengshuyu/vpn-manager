@@ -22,11 +22,6 @@ func (h *Handler) GetProduct(ctx *fasthttp.RequestCtx) {
 
 // CommitOrder commit an order
 func (h *Handler) CommitOrder(ctx *fasthttp.RequestCtx) {
-	userOrder, err := commitOrderDecode(ctx)
-	if err != nil {
-		h.WriteJSON(ctx, nil, err)
-		return
-	}
-	err = h.OrderService.CommitAnOrder(context.Background(), &userOrder)
+	err := h.OrderService.CommitAnOrder(context.Background(), string(ctx.PostBody()))
 	h.WriteJSON(ctx, nil, err)
 }

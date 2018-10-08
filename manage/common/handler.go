@@ -27,6 +27,11 @@ func (h *BaseHandler) WriteJSON(ctx *fasthttp.RequestCtx, data interface{}, err 
 	res := &BaseResponse{}
 	if err != nil {
 		res.Code, res.Message = GetErrorInfo(err)
+		switch t := err.(type) {
+		case *DBAccessError:
+			Logger.Error(t.Stack())
+		}
+
 	} else {
 		res.Data = data
 	}

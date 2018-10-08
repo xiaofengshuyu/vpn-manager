@@ -54,7 +54,7 @@ func (UserLoginRecorder) TableName() string {
 // UserVPNConfig user's vpn time config
 type UserVPNConfig struct {
 	gorm.Model
-	UserID int
+	UserID uint
 	User   CommonUser
 	Hosts  []Host
 	Start  time.Time

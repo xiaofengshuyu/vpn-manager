@@ -22,10 +22,11 @@ var (
 
 // Config is config information
 type Config struct {
-	Mode  string
-	Auth  AuthConfig
-	MYSQL MYSQLConfig
-	SMTP  SMTPConfig
+	Mode       string
+	Auth       AuthConfig
+	MYSQL      MYSQLConfig
+	SMTP       SMTPConfig
+	AppleStore AppleStoreConfig `yaml:"appleStore"`
 }
 
 // AuthConfig is auth to api config
@@ -66,7 +67,13 @@ type SMTPConfig struct {
 	Port     int
 }
 
+// AppleStoreConfig apple store config
+type AppleStoreConfig struct {
+	BundleID string `yaml:"bundleId"`
+}
+
 func init() {
+
 	var (
 		mode string
 	)
@@ -112,6 +119,11 @@ func init() {
 	flag.IntVar(&smtpPort, "smtp.port", 25, "smtp server port")
 
 	var (
+		appleBundleID string
+	)
+	flag.StringVar(&appleBundleID, "apple.bundle", "", "apple store bundle id.")
+
+	var (
 		configFile string
 	)
 
@@ -129,6 +141,7 @@ func init() {
 		if err != nil {
 			log.Fatalln(err)
 		}
+		fmt.Printf("%+v", AppConfig)
 		return
 	}
 	AppConfig = Config{

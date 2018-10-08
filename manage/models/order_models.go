@@ -17,14 +17,19 @@ type Product struct {
 	Code  string `gorm:"unique;not null"`
 	Type  int
 	Price float64
+	// Duration unit is month
+	Duration int
 }
 
 // Order is user's order
 type Order struct {
 	gorm.Model
-	UserID      int
-	User        CommonUser
+	UserID uint
+	User   CommonUser
+	// OrderNumber is OrderData's md5
 	OrderNumber string `gorm:"unique;not null"`
+	OrderData   string `gorm:"type:text"`
+	Quantity    int
 	Product     Product
-	ProductID   int
+	ProductID   uint
 }
