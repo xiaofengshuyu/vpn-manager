@@ -16,18 +16,24 @@ const (
 // CommonUser user
 type CommonUser struct {
 	gorm.Model
-	UserName    string `validate:"required"`
-	RealName    string
-	Password    string `validate:"required"`
-	Email       string `gorm:"unique;not null" validate:"required,email"`
-	Phone       string
-	Status      int `gorm:"default:0"`
-	VertifyCode string
+	UserName         string `validate:"required"`
+	RealName         string
+	Password         string `validate:"required"`
+	Email            string `gorm:"unique;not null" validate:"required,email"`
+	Phone            string
+	Status           int `gorm:"default:0"`
+	VertifyCode      string
+	VertifyCodeStart time.Time
 }
 
 // TableName is mysql table name
 func (CommonUser) TableName() string {
 	return "t_vpn_common_user"
+}
+
+// VertifyCodeIsValid vertify is valid, is not timeout
+func (u *CommonUser) VertifyCodeIsValid() bool {
+	return u.VertifyCodeStart.Add(10 * time.Minute).After(time.Now())
 }
 
 // Validate is check user

@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/jinzhu/gorm"
-
 	"github.com/xiaofengshuyu/vpn-manager/manage/common"
 	"github.com/xiaofengshuyu/vpn-manager/manage/models"
 	"github.com/xiaofengshuyu/vpn-manager/manage/utils"
@@ -17,11 +16,14 @@ type Service interface {
 	// UpdateUser()
 	// DeleteUser()
 	GetUserOne(ctx context.Context, cond *models.CommonUser) (user *models.CommonUser, err error)
+	RegisterUserWithoutCheck(ctx context.Context, user *models.CommonUser) (err error)
 	// GetUserByID()
 	RegisterUser(ctx context.Context, user *models.CommonUser) (err error)
 	EmailResend(ctx context.Context, user *models.CommonUser) (err error)
 	RegisterCheck(ctx context.Context, user *models.CommonUser) (err error)
 	Login(ctx context.Context, username, password string) (recorder *models.UserLoginRecorder, err error)
+
+	ResetPassword(ctx context.Context, user *models.CommonUser) (err error)
 }
 
 // BaseUserService is a implements for user service
@@ -58,6 +60,7 @@ func (s *BaseUserService) RegisterUser(ctx context.Context, user *models.CommonU
 
 	// create a verification code
 	user.VertifyCode = makeVertifyCode()
+	user.VertifyCodeStart = now
 
 	err = db.Create(user).Error
 	if err != nil {
@@ -72,6 +75,47 @@ func (s *BaseUserService) RegisterUser(ctx context.Context, user *models.CommonU
 			logger.Error(errs)
 		}
 	}()
+	return
+}
+
+// RegisterUserWithoutCheck is register without vertify code
+func (s *BaseUserService) RegisterUserWithoutCheck(ctx context.Context, user *models.CommonUser) (err error) {
+	db := common.DB.Begin()
+	defer func(err *error) {
+		if *err != nil {
+			db.Rollback()
+		} else {
+			db.Commit()
+		}
+	}(&err)
+	var users []*models.CommonUser
+
+	// check is existed
+	err = db.Where(&models.CommonUser{Email: user.Email}).Find(&users).Error
+	if err != nil {
+		common.NewDBAccessError(err)
+		return
+	}
+	if len(users) > 0 {
+		err = common.NewInsertRepeatError("email is existed")
+		return
+	}
+
+	user.UserName = user.Email
+	now := time.Now()
+	user.Status = models.UserStatusEnable
+	user.CreatedAt = now
+	user.UpdatedAt = now
+
+	// create a verification code
+	user.VertifyCode = makeVertifyCode()
+	user.VertifyCodeStart = now
+
+	err = db.Create(user).Error
+	if err != nil {
+		err = common.NewDBAccessError(err)
+		return
+	}
 	return
 }
 
@@ -92,7 +136,10 @@ func (s *BaseUserService) EmailResend(ctx context.Context, user *models.CommonUs
 		return
 	}
 	veritifyCode := makeVertifyCode()
-	err = db.Model(u).Update("veritify_code", veritifyCode).Error
+	err = db.Model(u).Update(
+		"veritify_code", veritifyCode,
+		"veritify_code_start", time.Now(),
+	).Error
 	if err != nil {
 		err = common.NewDBAccessError(err)
 		return
@@ -125,7 +172,7 @@ func (s *BaseUserService) RegisterCheck(ctx context.Context, user *models.Common
 		err = common.NewDBAccessError(err)
 		return
 	}
-	if u.VertifyCode != user.VertifyCode {
+	if u.VertifyCode != user.VertifyCode || !u.VertifyCodeIsValid() {
 		err = common.NewRequestParamsValueError(ErrVertifyCodeInvalid)
 		return
 	}
@@ -197,6 +244,38 @@ func (s *BaseUserService) Login(ctx context.Context, username, password string) 
 	}
 	recorder.ID = old.ID
 	err = db.Save(recorder).Error
+	if err != nil {
+		err = common.NewDBAccessError(err)
+		return
+	}
+	return
+}
+
+// ResetPassword reset password
+func (s *BaseUserService) ResetPassword(ctx context.Context, user *models.CommonUser) (err error) {
+	db := common.DB.Begin()
+	defer func(err *error) {
+		if *err != nil {
+			db.Rollback()
+		} else {
+			db.Commit()
+		}
+	}(&err)
+	u := &models.CommonUser{}
+	err = db.Where(&models.CommonUser{Email: user.Email}).First(u).Error
+	if err != nil {
+		err = common.NewDBAccessError(err)
+		return
+	}
+	if u.Status != models.UserStatusEnable {
+		err = common.NewRequestParamsValueError("user is not enable")
+		return
+	}
+	if u.VertifyCode != user.VertifyCode || !u.VertifyCodeIsValid() {
+		err = common.NewRequestParamsValueError(ErrVertifyCodeInvalid)
+		return
+	}
+	err = db.Model(u).Update("password", user.Password).Error
 	if err != nil {
 		err = common.NewDBAccessError(err)
 		return

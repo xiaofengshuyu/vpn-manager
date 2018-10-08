@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/tidwall/gjson"
-
 	"github.com/valyala/fasthttp"
 	"github.com/xiaofengshuyu/vpn-manager/manage/common"
 )
@@ -22,7 +21,7 @@ func (h *Handler) Register(ctx *fasthttp.RequestCtx) {
 		h.WriteJSON(ctx, nil, err)
 		return
 	}
-	err = h.UserService.RegisterUser(context.Background(), req)
+	err = h.UserService.RegisterUserWithoutCheck(context.Background(), req)
 	h.WriteJSON(ctx, nil, err)
 }
 
@@ -44,4 +43,15 @@ func (h *Handler) Login(ctx *fasthttp.RequestCtx) {
 		"token":   recorder.Token,
 		"refresh": recorder.RefreshToken,
 	}, nil)
+}
+
+// RefreshVertifyCode refresh user's vertify code
+func (h *Handler) RefreshVertifyCode(ctx *fasthttp.RequestCtx) {
+	req, err := userRegisterDecode(ctx)
+	if err != nil {
+		h.WriteJSON(ctx, nil, err)
+		return
+	}
+	err = h.UserService.ResetPassword(context.Background(), req)
+	h.WriteJSON(ctx, nil, err)
 }
