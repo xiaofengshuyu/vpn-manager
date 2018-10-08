@@ -1,12 +1,13 @@
 #!/bin/bash
 
-chmod +x /var/run/manage
+# build
+export GO111MODULE=on
+cd /go/src/github.com/github.com/xiaofengshuyu/vpn-manager/manage/
+go mod download
+go build -o /var/run/manage main.go
+
+
 sleep 5
-echo ${ADMIN_USER}
-echo ${ADMIN_PASSWORD}
-echo ${MYSQL_HOST}
-echo ${MYSQL_PORT}
-echo ${APPSTORE_BUNDLE}
 
 /var/run/manage  \
   -auth.user=${ADMIN_USER} \

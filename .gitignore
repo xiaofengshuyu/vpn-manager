@@ -15,3 +15,5 @@
 *.out
 
 /manage/vendor
+/manage/manage
+/manage/main
