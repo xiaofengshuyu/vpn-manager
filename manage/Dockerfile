@@ -1,7 +1,7 @@
 FROM ubuntu:14.04
 
 # install openssl tool
-RUN apt-get upate \
+RUN apt-get update \
     && apt-get install openssl \
     && rm -rf /var/lib/apt/lists/*
 

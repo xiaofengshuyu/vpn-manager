@@ -166,5 +166,9 @@ func init() {
 			Host:     smtpHost,
 			Port:     smtpPort,
 		},
+		AppleStore: AppleStoreConfig{
+			BundleID: appleBundleID,
+		},
 	}
+	fmt.Printf("%+v", AppConfig)
 }

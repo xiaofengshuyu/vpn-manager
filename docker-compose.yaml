@@ -9,19 +9,28 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
       - "3306:3306"
-    volumes:
-     - ~/data/docker-mysql:/var/lib/mysql
+#    volumes:
+#     - ~/data/docker-mysql:/var/lib/mysql
 
   manage:
     build: ./manage
     depends_on:
       - db
     environment:
+      MYSQL_HOST: db
+      MYSQL_PORT: 3306
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       ADMIN_USER: ${ADMIN_USER}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      APPSTORE_BUNDLE: ${APPSTORE_BUNDLE}
+      # dev or prod
+      RUN_MODE: dev
 
   nginx:
     image: nginx
