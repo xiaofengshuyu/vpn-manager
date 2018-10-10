@@ -11,10 +11,11 @@ import (
 
 // RegisterRequest is user register request
 type RegisterRequest struct {
-	UserName string `json:"userName"`
-	Password string `json:"password"`
-	Email    string `json:"email"`
-	Phone    string `json:"phone"`
+	UserName    string `json:"userName"`
+	Password    string `json:"password"`
+	Email       string `json:"email"`
+	Phone       string `json:"phone"`
+	VertifyCode string `json:"vertifyCode"`
 }
 
 func userRegisterDecode(ctx *fasthttp.RequestCtx) (user *models.CommonUser, err error) {
@@ -25,10 +26,11 @@ func userRegisterDecode(ctx *fasthttp.RequestCtx) (user *models.CommonUser, err 
 		return
 	}
 	user = &models.CommonUser{
-		UserName: req.UserName,
-		Password: req.Password,
-		Email:    req.Email,
-		Phone:    req.Phone,
+		UserName:    req.UserName,
+		Password:    req.Password,
+		Email:       req.Email,
+		Phone:       req.Phone,
+		VertifyCode: req.VertifyCode,
 	}
 	if user.UserName == "" {
 		if index := strings.Index(user.Email, "@"); index > 0 {

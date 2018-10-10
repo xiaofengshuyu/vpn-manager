@@ -5,15 +5,24 @@ import (
 )
 
 // host status
-var (
+const (
 	HostEnable  = 1
 	HostDisable = 0
+)
+
+// host type
+const (
+	HostTypeCommon = iota
+	HostTypeFree
+	HostTypeSelf
 )
 
 // Host is machine information
 type Host struct {
 	gorm.Model
 	Status   int
+	Name     string
+	Type     int
 	IP       string `gorm:"column(ip)"`
 	Port     int
 	Location string

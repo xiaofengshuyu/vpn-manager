@@ -21,7 +21,12 @@ func (s *BaseConfigService) GetVPNConfig(ctx context.Context, user *models.Commo
 	// get user info
 	db := common.DB
 	config = &models.UserVPNConfig{}
-	err = db.Preload("Hosts").Where(&models.UserVPNConfig{UserID: user.ID}).First(config).Error
+	err = db.Preload("User").Where(&models.UserVPNConfig{UserID: user.ID}).First(config).Error
+	if err != nil {
+		err = common.NewDBAccessError(err)
+		return
+	}
+	err = db.Where("type = ?", models.HostTypeCommon).Find(&config.Hosts).Error
 	if err != nil {
 		err = common.NewDBAccessError(err)
 		return
