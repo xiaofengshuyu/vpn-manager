@@ -199,7 +199,7 @@ func (s *BaseUserService) GetUserOne(ctx context.Context, cond *models.CommonUse
 func (s *BaseUserService) Login(ctx context.Context, username, password string) (recorder *models.UserLoginRecorder, err error) {
 	db := common.DB
 	user := &models.CommonUser{}
-	err = db.Where("email = ? or username = ?", username, username).First(user).Error
+	err = db.Where("email = ? or user_name = ?", username, username).First(user).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			err = common.NewNotRegisterError()
