@@ -31,6 +31,8 @@ func initDB() {
 				&models.Order{},
 				&models.Product{},
 				&models.UserVPNConfig{},
+				&models.FrequentQuestions{},
+				&models.Feedback{},
 			)
 	}
 }

@@ -3,6 +3,7 @@ package router
 import (
 	"github.com/buaazp/fasthttprouter"
 	"github.com/valyala/fasthttp"
+	"github.com/xiaofengshuyu/vpn-manager/manage/faq"
 	"github.com/xiaofengshuyu/vpn-manager/manage/host"
 	"github.com/xiaofengshuyu/vpn-manager/manage/order"
 	"github.com/xiaofengshuyu/vpn-manager/manage/user"
@@ -24,8 +25,13 @@ func init() {
 	orderHandler := &order.Handler{}
 	orderHandler.OrderService = &order.BaseOrderService{}
 
+	// init vpn config handler
 	configHandler := &host.ConfigHandler{}
 	configHandler.Service = &host.BaseConfigService{}
+
+	// init faq handler
+	faqHandler := &faq.Handler{}
+	faqHandler.Service = &faq.BaseFAQService{}
 
 	// internal toute config
 	internalRouter := fasthttprouter.New()
@@ -40,6 +46,10 @@ func init() {
 	// user register
 	externalRouter.POST("/api/register", userHandler.Register)
 	externalRouter.POST("/api/login", userHandler.Login)
+
+	// faq
+	externalRouter.GET("/api/faq", faqHandler.GetFAQ)
+	externalRouter.POST("/api/feedback", faqHandler.PushFeedback)
 
 	// need login
 	needLoginRouter := fasthttprouter.New()
