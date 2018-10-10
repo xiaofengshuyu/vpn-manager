@@ -18,6 +18,7 @@ type VPNConfigResponse struct {
 
 // VPNHostConfig vpn host config
 type VPNHostConfig struct {
+	ID   uint   `json:"id"`
 	Name string `json:"name"`
 	IP   string `json:"ip"`
 }
@@ -37,6 +38,7 @@ func vpnConfigResponseEncode(conf *models.UserVPNConfig) (res VPNConfigResponse)
 	hosts := make([]VPNHostConfig, len(conf.Hosts))
 	for i, item := range conf.Hosts {
 		hosts[i] = VPNHostConfig{
+			ID:   item.ID,
 			Name: item.Name,
 			IP:   item.IP,
 		}
