@@ -13,11 +13,18 @@ const (
 	UserStatusEnable
 )
 
-// user type
+// user level
 const (
 	UserLevelFree = iota
 	UserLevelCommon
-	UserHighSpeed
+	UserLevelHigh
+)
+
+// use package type
+const (
+	UserPackageTypeFree = iota
+	UserPackageTypeCommon
+	UserPackageTypeHighSpeed
 )
 
 // CommonUser user
@@ -30,6 +37,7 @@ type CommonUser struct {
 	Phone            string
 	Status           int `gorm:"default:0"`
 	Level            int
+	PackageType      int
 	VertifyCode      string
 	VertifyCodeStart time.Time
 }

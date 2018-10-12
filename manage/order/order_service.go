@@ -65,10 +65,11 @@ func (s *BaseOrderService) CommitAnOrder(ctx context.Context, data string) (err 
 		err = common.NewDBAccessError(err)
 		return
 	}
-
+	// TODO set package type by product
+	var packageType = models.UserPackageTypeCommon
 	// change user level
 	if user.Level == models.UserLevelFree {
-		err = db.Where("id = ?", user.ID).Update("level", models.UserLevelCommon).Error
+		err = db.Where("id = ?", user.ID).Update("level", models.UserLevelCommon, "package_type", packageType).Error
 		if err != nil {
 			err = common.NewDBAccessError(err)
 			return

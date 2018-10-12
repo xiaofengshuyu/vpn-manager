@@ -56,6 +56,7 @@ func init() {
 	needLoginRouter.POST("/api/common/order/commit", orderHandler.CommitOrder)
 	needLoginRouter.POST("/api/common/order/product", orderHandler.GetProduct)
 	needLoginRouter.POST("/api/common/config/self", configHandler.GetVPNConfig)
+	needLoginRouter.POST("/api/common/config/hosts", configHandler.GetHostList)
 
 	externalRouter.POST("/api/common/*any", BuildHandler(
 		needLoginRouter.Handler,
