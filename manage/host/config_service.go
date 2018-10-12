@@ -26,9 +26,9 @@ func (s *BaseConfigService) GetVPNConfig(ctx context.Context, user *models.Commo
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			config.User = *user
-		} else {
-			err = common.NewDBAccessError(err)
+			return config, nil
 		}
+		err = common.NewDBAccessError(err)
 		return
 	}
 	err = db.Where("type = ?", models.HostTypeCommon).Find(&config.Hosts).Error

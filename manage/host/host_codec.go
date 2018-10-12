@@ -35,7 +35,13 @@ func vpnConfigResponseEncode(conf *models.UserVPNConfig) (res VPNConfigResponse)
 	res.UserName = conf.User.Email
 	res.Password = conf.User.Password
 	res.Start = conf.Start.Unix()
+	if res.Start < 0 {
+		res.Start = 0
+	}
 	res.End = conf.End.Unix()
+	if res.End < 0 {
+		res.End = 0
+	}
 	res.Level = conf.User.Level
 
 	hosts := make([]VPNHostConfig, len(conf.Hosts))
