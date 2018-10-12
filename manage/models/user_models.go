@@ -13,6 +13,13 @@ const (
 	UserStatusEnable
 )
 
+// user type
+const (
+	UserLevelFree = iota
+	UserLevelCommon
+	UserHighSpeed
+)
+
 // CommonUser user
 type CommonUser struct {
 	gorm.Model
@@ -22,6 +29,7 @@ type CommonUser struct {
 	Email            string `gorm:"unique;not null" validate:"required,email"`
 	Phone            string
 	Status           int `gorm:"default:0"`
+	Level            int
 	VertifyCode      string
 	VertifyCodeStart time.Time
 }

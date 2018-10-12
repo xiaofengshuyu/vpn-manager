@@ -3,6 +3,7 @@ package host
 import (
 	"context"
 
+	"github.com/jinzhu/gorm"
 	"github.com/xiaofengshuyu/vpn-manager/manage/common"
 	"github.com/xiaofengshuyu/vpn-manager/manage/models"
 )
@@ -23,7 +24,11 @@ func (s *BaseConfigService) GetVPNConfig(ctx context.Context, user *models.Commo
 	config = &models.UserVPNConfig{}
 	err = db.Preload("User").Where(&models.UserVPNConfig{UserID: user.ID}).First(config).Error
 	if err != nil {
-		err = common.NewDBAccessError(err)
+		if err == gorm.ErrRecordNotFound {
+			config.User = *user
+		} else {
+			err = common.NewDBAccessError(err)
+		}
 		return
 	}
 	err = db.Where("type = ?", models.HostTypeCommon).Find(&config.Hosts).Error

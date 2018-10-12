@@ -66,6 +66,15 @@ func (s *BaseOrderService) CommitAnOrder(ctx context.Context, data string) (err 
 		return
 	}
 
+	// change user level
+	if user.Level == models.UserLevelFree {
+		err = db.Where("id = ?", user.ID).Update("level", models.UserLevelCommon).Error
+		if err != nil {
+			err = common.NewDBAccessError(err)
+			return
+		}
+	}
+
 	// write order info to db
 	userOrder.UserID = user.ID
 	userOrder.User = *user
