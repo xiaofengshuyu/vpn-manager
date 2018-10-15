@@ -24,6 +24,7 @@ type Host struct {
 	Name     string
 	Type     int
 	Icon     string
+	Remark   string
 	IP       string `gorm:"column(ip)"`
 	Port     int
 	Location string
