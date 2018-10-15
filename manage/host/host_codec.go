@@ -23,6 +23,7 @@ type VPNHostConfig struct {
 	ID   uint   `json:"id"`
 	Name string `json:"name"`
 	IP   string `json:"ip"`
+	Icon string `json:"icon"`
 }
 
 func vpnConfigResponseEncode(conf *models.UserVPNConfig) (res VPNConfigResponse) {
@@ -52,6 +53,7 @@ func vpnConfigResponseEncode(conf *models.UserVPNConfig) (res VPNConfigResponse)
 			ID:   item.ID,
 			Name: item.Name,
 			IP:   item.IP,
+			Icon: item.Icon,
 		}
 	}
 	res.Hosts = hosts
