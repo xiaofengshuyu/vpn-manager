@@ -44,6 +44,8 @@ func (h *ConfigHandler) GetHostList(ctx *fasthttp.RequestCtx) {
 		return
 	}
 	data := vpnConfigResponseEncode(conf)
-	h.WriteJSON(ctx, data.Hosts, nil)
+	h.WriteJSON(ctx, map[string]interface{}{
+		"list": data.Hosts,
+	}, nil)
 	return
 }
