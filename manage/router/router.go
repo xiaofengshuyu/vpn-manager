@@ -48,6 +48,7 @@ func init() {
 	externalRouter.POST("/api/login", userHandler.Login)
 
 	// faq
+	externalRouter.POST("/api/faq", faqHandler.GetFAQ)
 	externalRouter.GET("/api/faq", faqHandler.GetFAQ)
 	externalRouter.POST("/api/feedback", faqHandler.PushFeedback)
 
