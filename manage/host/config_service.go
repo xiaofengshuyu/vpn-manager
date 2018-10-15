@@ -22,16 +22,19 @@ func (s *BaseConfigService) GetVPNConfig(ctx context.Context, user *models.Commo
 	// get user info
 	db := common.DB
 	config = &models.UserVPNConfig{}
+	hostTypts := []int{models.HostTypeFree}
 	err = db.Preload("User").Where(&models.UserVPNConfig{UserID: user.ID}).First(config).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			config.User = *user
-			return config, nil
+		} else {
+			err = common.NewDBAccessError(err)
+			return
 		}
-		err = common.NewDBAccessError(err)
-		return
+	} else {
+		hostTypts = append(hostTypts, models.HostTypeCommon)
 	}
-	err = db.Where("type = ?", models.HostTypeCommon).Find(&config.Hosts).Error
+	err = db.Where("type in (?)", hostTypts).Find(&config.Hosts).Error
 	if err != nil {
 		err = common.NewDBAccessError(err)
 		return
