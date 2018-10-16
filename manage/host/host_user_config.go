@@ -20,7 +20,7 @@ func AppendConfig() (err error) {
 	var hosts []*models.Host
 	db := common.DB
 	// get all hosts
-	err = db.Where("status = ?", models.HostEnable).Find(&hosts).Error
+	err = db.Where("status = ? and type = ?", models.HostEnable, models.HostTypeCommon).Find(&hosts).Error
 	if err != nil {
 		return
 	}

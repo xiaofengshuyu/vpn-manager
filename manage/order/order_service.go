@@ -69,7 +69,12 @@ func (s *BaseOrderService) CommitAnOrder(ctx context.Context, data string) (err 
 	var packageType = models.UserPackageTypeCommon
 	// change user level
 	if user.Level == models.UserLevelFree {
-		err = db.Where("id = ?", user.ID).Update("level", models.UserLevelCommon, "package_type", packageType).Error
+		err = db.Model(user).UpdateColumns(
+			models.CommonUser{
+				Level:       models.UserLevelCommon,
+				PackageType: packageType,
+			},
+		).Error
 		if err != nil {
 			err = common.NewDBAccessError(err)
 			return
