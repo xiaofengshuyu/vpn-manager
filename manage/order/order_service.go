@@ -119,7 +119,12 @@ func (s *BaseOrderService) CommitAnOrder(ctx context.Context, data string) (err 
 			currentConfig.End = now.AddDate(0, month, 0)
 		}
 		// update
-		errs := db.Model(&currentConfig).Update("start", currentConfig.Start, "end", currentConfig.End).Error
+		errs := db.Model(&currentConfig).UpdateColumns(
+			models.UserVPNConfig{
+				Start: currentConfig.Start,
+				End:   currentConfig.End,
+			},
+		).Error
 		if errs != nil {
 			err = errs
 			return

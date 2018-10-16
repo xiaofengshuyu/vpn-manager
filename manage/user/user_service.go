@@ -137,9 +137,11 @@ func (s *BaseUserService) EmailResend(ctx context.Context, user *models.CommonUs
 		return
 	}
 	veritifyCode := makeVertifyCode()
-	err = db.Model(u).Update(
-		"veritify_code", veritifyCode,
-		"veritify_code_start", time.Now(),
+	err = db.Model(u).UpdateColumns(
+		models.CommonUser{
+			VertifyCode:      veritifyCode,
+			VertifyCodeStart: time.Now(),
+		},
 	).Error
 	if err != nil {
 		err = common.NewDBAccessError(err)
