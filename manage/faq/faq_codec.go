@@ -9,19 +9,26 @@ import (
 
 // FrequentQuestionsResponse faq response
 type FrequentQuestionsResponse struct {
+	List []FrequentQuestionsItem `json:"list"`
+}
+
+// FrequentQuestionsItem faq item
+type FrequentQuestionsItem struct {
 	Question string `json:"question"`
 	Answer   string `json:"answer"`
 }
 
-func faqEncode(data []models.FrequentQuestions) (res []FrequentQuestionsResponse) {
-	res = make([]FrequentQuestionsResponse, len(data))
+func faqEncode(data []models.FrequentQuestions) (res FrequentQuestionsResponse) {
+	list := make([]FrequentQuestionsItem, len(data))
 	for i, item := range data {
-		res[i] = FrequentQuestionsResponse{
+		list[i] = FrequentQuestionsItem{
 			Question: item.Question,
 			Answer:   item.Answer,
 		}
 	}
-	return
+	return FrequentQuestionsResponse{
+		List: list,
+	}
 }
 
 func feedbackDecode(ctx *fasthttp.RequestCtx) (fb models.Feedback, err error) {
