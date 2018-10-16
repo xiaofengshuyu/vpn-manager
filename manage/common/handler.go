@@ -36,5 +36,21 @@ func (h *BaseHandler) WriteJSON(ctx *fasthttp.RequestCtx, data interface{}, err 
 		res.Data = data
 	}
 	d, _ := json.Marshal(res)
+	// add log
+	AccessLogger.Info(formatResponseData(ctx.PostBody(), d))
 	ctx.SetBody(d)
+}
+
+// ResponseRecord response record
+type ResponseRecord struct {
+	Request  string `json:"request"`
+	Response string `json:"response"`
+}
+
+func formatResponseData(req, res []byte) string {
+	d, _ := json.Marshal(ResponseRecord{
+		Request:  string(req),
+		Response: string(res),
+	})
+	return string(d)
 }
