@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -150,6 +151,8 @@ func (s *BaseUserService) EmailResend(ctx context.Context, user *models.CommonUs
 		errs := utils.SendSimpleEmail([]string{user.Email}, "Vertify Code", veritifyCode)
 		if errs != nil {
 			logger.Error(errs)
+		} else {
+			logger.Info(fmt.Sprintf("send email to %s succeed,vertify code is %s.", user.Email, veritifyCode))
 		}
 	}()
 	return
