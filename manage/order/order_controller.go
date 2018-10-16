@@ -3,6 +3,7 @@ package order
 import (
 	"context"
 
+	"github.com/tidwall/gjson"
 	"github.com/valyala/fasthttp"
 	"github.com/xiaofengshuyu/vpn-manager/manage/common"
 )
@@ -22,6 +23,8 @@ func (h *Handler) GetProduct(ctx *fasthttp.RequestCtx) {
 
 // CommitOrder commit an order
 func (h *Handler) CommitOrder(ctx *fasthttp.RequestCtx) {
-	err := h.OrderService.CommitAnOrder(context.Background(), string(ctx.PostBody()))
+	parse := gjson.ParseBytes(ctx.PostBody())
+	data := parse.Get("receipt-data").String()
+	err := h.OrderService.CommitAnOrder(context.Background(), data)
 	h.WriteJSON(ctx, nil, err)
 }
