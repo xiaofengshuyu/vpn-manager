@@ -6,6 +6,7 @@ import (
 	"github.com/tidwall/gjson"
 	"github.com/valyala/fasthttp"
 	"github.com/xiaofengshuyu/vpn-manager/manage/common"
+	"github.com/xiaofengshuyu/vpn-manager/manage/models"
 )
 
 // Handler is user handler
@@ -47,6 +48,16 @@ func (h *Handler) Login(ctx *fasthttp.RequestCtx) {
 
 // RefreshVertifyCode refresh user's vertify code
 func (h *Handler) RefreshVertifyCode(ctx *fasthttp.RequestCtx) {
+	parse := gjson.ParseBytes(ctx.PostBody())
+	email := parse.Get("email").String()
+	err := h.UserService.EmailResend(context.Background(), &models.CommonUser{
+		Email: email,
+	})
+	h.WriteJSON(ctx, nil, err)
+}
+
+// ResetPassword reset password
+func (h *Handler) ResetPassword(ctx *fasthttp.RequestCtx) {
 	req, err := userRegisterDecode(ctx)
 	if err != nil {
 		h.WriteJSON(ctx, nil, err)
