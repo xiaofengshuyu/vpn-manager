@@ -147,7 +147,7 @@ func (s *BaseUserService) EmailResend(ctx context.Context, user *models.CommonUs
 	// send an email
 	go func() {
 		// TODO email templement
-		errs := utils.SendSimpleEmail([]string{user.Email}, "Vertify Code", user.VertifyCode)
+		errs := utils.SendSimpleEmail([]string{user.Email}, "Vertify Code", veritifyCode)
 		if errs != nil {
 			logger.Error(errs)
 		}
