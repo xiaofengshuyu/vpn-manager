@@ -86,7 +86,14 @@ func (s *BaseOrderService) CommitAnOrder(ctx context.Context, data string) (err 
 	}
 
 	// write order info to db
-	err = db.Create(&userOrder).Error
+	err = db.Create(&models.Order{
+		UserID:      userOrder.UserID,
+		OrderNumber: userOrder.OrderNumber,
+		OrderData:   userOrder.OrderData,
+		Quantity:    userOrder.Quantity,
+		Product:     userOrder.Product,
+		ProductID:   userOrder.ProductID,
+	}).Error
 	if err != nil {
 		err = common.NewDBAccessError(err)
 		return
