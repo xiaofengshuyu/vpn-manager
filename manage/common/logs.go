@@ -32,5 +32,7 @@ func initLog() {
 			Compress: true,
 		})
 		AccessLogger.SetFormatter(&logrus.JSONFormatter{})
+	} else {
+		Logger.Level = logrus.DebugLevel
 	}
 }

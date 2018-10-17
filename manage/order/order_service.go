@@ -32,12 +32,21 @@ func (s *BaseOrderService) GetProduct(ctx context.Context) (products []*models.P
 
 // CommitAnOrder is create a order
 func (s *BaseOrderService) CommitAnOrder(ctx context.Context, data string) (err error) {
+	user, ok := ctx.Value(common.UserInfoKey).(models.CommonUser)
+	if !ok {
+		err = common.NewNotLoginError("cannot read user info from context")
+		return
+	}
 
 	// check order from apple server
 	userOrder, err := GetOrderFromApple(data)
 	if err != nil {
 		return
 	}
+
+	// get user
+	userOrder.User = user
+	userOrder.UserID = user.ID
 
 	db := common.DB.Begin()
 	defer func(err *error) {
@@ -59,12 +68,7 @@ func (s *BaseOrderService) CommitAnOrder(ctx context.Context, data string) (err 
 		err = common.NewInsertRepeatError("the order is existed")
 		return
 	}
-	user := &models.CommonUser{}
-	err = db.Where(&models.CommonUser{Email: userOrder.User.Email}).First(user).Error
-	if err != nil {
-		err = common.NewDBAccessError(err)
-		return
-	}
+
 	// TODO set package type by product
 	var packageType = models.UserPackageTypeCommon
 	// change user level
@@ -82,8 +86,6 @@ func (s *BaseOrderService) CommitAnOrder(ctx context.Context, data string) (err 
 	}
 
 	// write order info to db
-	userOrder.UserID = user.ID
-	userOrder.User = *user
 	err = db.Create(&userOrder).Error
 	if err != nil {
 		err = common.NewDBAccessError(err)

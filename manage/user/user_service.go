@@ -133,6 +133,9 @@ func (s *BaseUserService) EmailResend(ctx context.Context, user *models.CommonUs
 	u := &models.CommonUser{}
 	err = db.Where(&models.CommonUser{Email: user.Email}).First(u).Error
 	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			err = common.NewResourcesNotFoundError(fmt.Sprintf("User %s not found", user.Email))
+		}
 		err = common.NewDBAccessError(err)
 		return
 	}
@@ -174,7 +177,11 @@ func (s *BaseUserService) RegisterCheck(ctx context.Context, user *models.Common
 	u := &models.CommonUser{}
 	err = db.Where(&models.CommonUser{Email: user.Email}).First(u).Error
 	if err != nil {
-		err = common.NewDBAccessError(err)
+		if err == gorm.ErrRecordNotFound {
+			err = common.NewResourcesNotFoundError(fmt.Sprintf("User %s not found", user.Email))
+		} else {
+			err = common.NewDBAccessError(err)
+		}
 		return
 	}
 	if u.VertifyCode != user.VertifyCode || !u.VertifyCodeIsValid() {
@@ -195,7 +202,11 @@ func (s *BaseUserService) GetUserOne(ctx context.Context, cond *models.CommonUse
 	user = &models.CommonUser{}
 	err = db.Where(cond).First(user).Error
 	if err != nil {
-		err = common.NewResourcesNotFoundError(err)
+		if err == gorm.ErrRecordNotFound {
+			err = common.NewResourcesNotFoundError(fmt.Sprintf("User %s not found", user.Email))
+		} else {
+			err = common.NewResourcesNotFoundError(err)
+		}
 	}
 	return
 }

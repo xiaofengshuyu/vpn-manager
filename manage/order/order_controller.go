@@ -25,6 +25,12 @@ func (h *Handler) GetProduct(ctx *fasthttp.RequestCtx) {
 func (h *Handler) CommitOrder(ctx *fasthttp.RequestCtx) {
 	parse := gjson.ParseBytes(ctx.PostBody())
 	data := parse.Get("receipt-data").String()
-	err := h.OrderService.CommitAnOrder(context.Background(), data)
+	user, ok := common.GlobalSession.GetUser(ctx.ID())
+	if !ok {
+		h.WriteJSON(ctx, nil, common.NewNotLoginError())
+		return
+	}
+	userCtx := context.WithValue(context.Background(), common.UserInfoKey, user)
+	err := h.OrderService.CommitAnOrder(userCtx, data)
 	h.WriteJSON(ctx, nil, err)
 }

@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/jinzhu/gorm"
+
 	"github.com/xiaofengshuyu/vpn-manager/manage/common"
 	"github.com/xiaofengshuyu/vpn-manager/manage/config"
 	"github.com/xiaofengshuyu/vpn-manager/manage/models"
@@ -75,6 +77,9 @@ func GetOrderFromApple(data string) (order models.Order, err error) {
 	product := &models.Product{Code: lastOrder.ProductID}
 	err = db.Where(product).First(product).Error
 	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			err = common.NewResourcesNotFoundError(fmt.Sprintf("product %s not found", lastOrder.ProductID))
+		}
 		return
 	}
 	order.Product = *product
