@@ -32,7 +32,7 @@ func (s *BaseFAQService) GetFrequentAskedQuestions(ctx context.Context) (faqs []
 // PushFeedBack push user feedcack content
 func (s *BaseFAQService) PushFeedBack(ctx context.Context, fb models.Feedback) (err error) {
 	db := common.DB
-	err = db.Create(fb).Error
+	err = db.Create(&fb).Error
 	if err != nil {
 		err = common.NewDBAccessError(err)
 		return

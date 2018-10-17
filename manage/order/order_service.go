@@ -94,6 +94,7 @@ func (s *BaseOrderService) CommitAnOrder(ctx context.Context, data string) (err 
 		Product:     userOrder.Product,
 		ProductID:   userOrder.ProductID,
 	}).Error
+	// err = db.Create(&userOrder).Error
 	if err != nil {
 		err = common.NewDBAccessError(err)
 		return
