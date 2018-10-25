@@ -23,7 +23,7 @@ type Service interface {
 	EmailResend(ctx context.Context, user *models.CommonUser) (err error)
 	RegisterCheck(ctx context.Context, user *models.CommonUser) (err error)
 	Login(ctx context.Context, username, password string) (recorder *models.UserLoginRecorder, err error)
-
+	Logout(ctx context.Context, token string) (err error)
 	ResetPassword(ctx context.Context, user *models.CommonUser) (err error)
 }
 
@@ -263,6 +263,20 @@ func (s *BaseUserService) Login(ctx context.Context, username, password string) 
 	if err != nil {
 		err = common.NewDBAccessError(err)
 		return
+	}
+	return
+}
+
+// Logout log out
+func (s *BaseUserService) Logout(ctx context.Context, token string) (err error) {
+	// delete token
+	if token != "" {
+		db := common.DB
+		err = db.Where("token = ?", token).Delete(&models.UserLoginRecorder{}).Error
+		if err != nil {
+			err = common.NewDBAccessError(err)
+			return
+		}
 	}
 	return
 }

@@ -46,6 +46,17 @@ func (h *Handler) Login(ctx *fasthttp.RequestCtx) {
 	}, nil)
 }
 
+// Logout user logout
+func (h *Handler) Logout(ctx *fasthttp.RequestCtx) {
+	token := string(ctx.Request.Header.Peek("token"))
+	if token == "" {
+		h.WriteJSON(ctx, nil, common.NewRequestParamsValueError("token is empty"))
+		return
+	}
+	err := h.UserService.Logout(context.Background(), token)
+	h.WriteJSON(ctx, nil, err)
+}
+
 // RefreshVertifyCode refresh user's vertify code
 func (h *Handler) RefreshVertifyCode(ctx *fasthttp.RequestCtx) {
 	parse := gjson.ParseBytes(ctx.PostBody())

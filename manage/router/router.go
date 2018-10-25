@@ -46,6 +46,7 @@ func init() {
 	// user register
 	externalRouter.POST("/api/register", userHandler.Register)
 	externalRouter.POST("/api/login", userHandler.Login)
+	externalRouter.POST("/api/logout", userHandler.Logout)
 
 	externalRouter.POST("/api/refreshCode", userHandler.RefreshVertifyCode)
 	externalRouter.POST("/api/resetPassword", userHandler.ResetPassword)
