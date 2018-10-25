@@ -3,15 +3,43 @@ package host
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"os/exec"
+	"sync"
 	"time"
 
 	"github.com/pkg/sftp"
 	"github.com/xiaofengshuyu/vpn-manager/manage/common"
+	"github.com/xiaofengshuyu/vpn-manager/manage/config"
 	"github.com/xiaofengshuyu/vpn-manager/manage/models"
 	"golang.org/x/crypto/ssh"
 )
+
+var (
+	mu sync.Mutex
+)
+
+var (
+	l2tpFile  = config.AppConfig.Rsync.Path + "/chap-secrets"
+	xauthFile = config.AppConfig.Rsync.Path + "/passwd"
+)
+
+// WriteConfigToLocal is write vpn config to local,node machine sync by rsync tool
+func WriteConfigToLocal() (err error) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	l2TPData, xAuthData, err := makeUserAuthData()
+	if err != nil {
+		return
+	}
+
+	// write to local
+	ioutil.WriteFile(l2tpFile, l2TPData, 0666)
+	ioutil.WriteFile(xauthFile, xAuthData, 0666)
+	return
+}
 
 // AppendConfig append vpn config for user
 func AppendConfig() (err error) {
@@ -91,7 +119,7 @@ func makeL2TPSecert(user, password string) string {
 
 func makeXAuthSecert(user, password string) string {
 	pdata, _ := exec.Command("openssl", "passwd", "-1", password).Output()
-	return fmt.Sprintf("%s:%s:xauth-psk\n", user, pdata)
+	return fmt.Sprintf("%s:%s:xauth-psk\n", user, pdata[:len(pdata)-1])
 }
 
 func getClientWithPassword(host string, port int, user, password string) (client *sftp.Client, err error) {

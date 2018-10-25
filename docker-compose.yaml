@@ -7,8 +7,6 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    ports:
-      - "3306:3306"
 #    volumes:
 #     - ~/data/docker-mysql:/var/lib/mysql
 
@@ -29,8 +27,14 @@ services:
       SMTP_HOST: ${SMTP_HOST}
       SMTP_PORT: ${SMTP_PORT}
       APPSTORE_BUNDLE: ${APPSTORE_BUNDLE}
+      RSYNC_HOST: ${RSYNC_HOST}
+      RSYNC_USERNAME: ${RSYNC_USERNAME}
+      RSYNC_PASSWORD: ${RSYNC_PASSWORD}
+      HOST_ALLOW: ${HOST_ALLOW}
       # dev or prod
       RUN_MODE: dev
+    ports:
+      - "873:873"
 
   nginx:
     image: nginx

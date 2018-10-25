@@ -39,14 +39,14 @@ func (s *BaseOrderService) CommitAnOrder(ctx context.Context, data string) (err 
 	}
 
 	// check order from apple server
-	userOrder, err := GetOrderFromApple(data)
+	userOrders, err := GetOrderFromApple(data)
 	if err != nil {
 		return
 	}
 
-	// get user
-	userOrder.User = user
-	userOrder.UserID = user.ID
+	if len(userOrders) == 0 {
+		return
+	}
 
 	db := common.DB.Begin()
 	defer func(err *error) {
@@ -57,15 +57,39 @@ func (s *BaseOrderService) CommitAnOrder(ctx context.Context, data string) (err 
 		}
 	}(&err)
 
+	// get current order
+	var (
+		needAddOrders = make([]*models.Order, 0)
+		savedOrders   = make([]*models.Order, 0)
+	)
 	// check order info
-	var orders []*models.Order
-	err = db.Where(&models.Order{OrderNumber: userOrder.OrderNumber}).Find(&orders).Error
+	err = db.Where(&models.Order{UserID: user.ID}).Find(&savedOrders).Error
 	if err != nil {
 		err = common.NewDBAccessError(err)
 		return
 	}
-	if len(orders) > 0 {
-		err = common.NewInsertRepeatError("the order is existed")
+	// compare
+	for _, userOrder := range userOrders {
+		find := false
+		for _, old := range savedOrders {
+			if userOrder.OrderNumber == old.OrderNumber {
+				find = true
+			}
+		}
+		if !find {
+			needAddOrders = append(needAddOrders, &models.Order{
+				UserID:      user.ID,
+				OrderNumber: userOrder.OrderNumber,
+				OrderData:   userOrder.OrderData,
+				OrderTime:   userOrder.OrderTime,
+				Quantity:    userOrder.Quantity,
+				AddMonth:    userOrder.AddMonth,
+				ProductID:   userOrder.ProductID,
+			})
+		}
+	}
+	if len(needAddOrders) == 0 {
+		err = common.NewInsertRepeatError("all order is existed")
 		return
 	}
 
@@ -84,28 +108,20 @@ func (s *BaseOrderService) CommitAnOrder(ctx context.Context, data string) (err 
 			return
 		}
 	}
-
-	// write order info to db
-	err = db.Create(&models.Order{
-		UserID:      userOrder.UserID,
-		OrderNumber: userOrder.OrderNumber,
-		OrderData:   userOrder.OrderData,
-		Quantity:    userOrder.Quantity,
-		Product:     userOrder.Product,
-		ProductID:   userOrder.ProductID,
-	}).Error
-	// err = db.Create(&userOrder).Error
-	if err != nil {
-		err = common.NewDBAccessError(err)
-		return
+	var month int
+	for _, item := range needAddOrders {
+		month += item.AddMonth
+		err = db.Create(item).Error
+		if err != nil {
+			err = common.NewDBAccessError(err)
+			return
+		}
 	}
 
 	// TODO
-	// update user vpn config
 	// get user current status
 	var (
-		now   = time.Now()
-		month = userOrder.Product.Duration * userOrder.Quantity
+		now = time.Now()
 	)
 	var currentConfig models.UserVPNConfig
 	errs := db.Where(&models.UserVPNConfig{UserID: user.ID}).First(&currentConfig).Error
@@ -148,7 +164,8 @@ func (s *BaseOrderService) CommitAnOrder(ctx context.Context, data string) (err 
 
 	// write vpn config
 	go func() {
-		errs := host.AppendConfig()
+		errs := host.WriteConfigToLocal()
+		// errs := host.AppendConfig()
 		if errs != nil {
 			common.Logger.Error(err)
 		}

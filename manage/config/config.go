@@ -15,6 +15,11 @@ const (
 	PROD = "prod"
 )
 
+// default value
+const (
+	rsyncPathDefault = "/data"
+)
+
 var (
 	// AppConfig is the project config
 	AppConfig Config
@@ -27,6 +32,7 @@ type Config struct {
 	MYSQL      MYSQLConfig
 	SMTP       SMTPConfig
 	AppleStore AppleStoreConfig `yaml:"appleStore"`
+	Rsync      RsyncConfig
 }
 
 // AuthConfig is auth to api config
@@ -70,6 +76,11 @@ type SMTPConfig struct {
 // AppleStoreConfig apple store config
 type AppleStoreConfig struct {
 	BundleID string `yaml:"bundleId"`
+}
+
+// RsyncConfig rsync config
+type RsyncConfig struct {
+	Path string `json:"path"`
 }
 
 func init() {
@@ -124,6 +135,11 @@ func init() {
 	flag.StringVar(&appleBundleID, "apple.bundle", "", "apple store bundle id.")
 
 	var (
+		rsyncPath string
+	)
+	flag.StringVar(&rsyncPath, "rsync.path", rsyncPathDefault, "rsync root dir")
+
+	var (
 		configFile string
 	)
 
@@ -140,35 +156,42 @@ func init() {
 		err = yaml.Unmarshal(data, &AppConfig)
 		if err != nil {
 			log.Fatalln(err)
+			panic(err)
 		}
-		fmt.Printf("%+v", AppConfig)
-		return
+	} else {
+		AppConfig = Config{
+			Mode: mode,
+			Auth: AuthConfig{
+				User:     authUser,
+				Password: authPassword,
+			},
+			MYSQL: MYSQLConfig{
+				Host:        mysqlHost,
+				Port:        mysqlPort,
+				User:        mysqlUser,
+				Password:    mysqlPassword,
+				DB:          mysqlDB,
+				MaxIdle:     mysqlMaxIdle,
+				MaxConnect:  mysqlMaxConnect,
+				MaxLifeTime: mysqlLifeTime,
+			},
+			SMTP: SMTPConfig{
+				User:     smtpUser,
+				Password: smtpPassword,
+				Host:     smtpHost,
+				Port:     smtpPort,
+			},
+			AppleStore: AppleStoreConfig{
+				BundleID: appleBundleID,
+			},
+			Rsync: RsyncConfig{
+				Path: rsyncPath,
+			},
+		}
 	}
-	AppConfig = Config{
-		Mode: mode,
-		Auth: AuthConfig{
-			User:     authUser,
-			Password: authPassword,
-		},
-		MYSQL: MYSQLConfig{
-			Host:        mysqlHost,
-			Port:        mysqlPort,
-			User:        mysqlUser,
-			Password:    mysqlPassword,
-			DB:          mysqlDB,
-			MaxIdle:     mysqlMaxIdle,
-			MaxConnect:  mysqlMaxConnect,
-			MaxLifeTime: mysqlLifeTime,
-		},
-		SMTP: SMTPConfig{
-			User:     smtpUser,
-			Password: smtpPassword,
-			Host:     smtpHost,
-			Port:     smtpPort,
-		},
-		AppleStore: AppleStoreConfig{
-			BundleID: appleBundleID,
-		},
+	// set difault
+	if AppConfig.Rsync.Path == "" {
+		AppConfig.Rsync.Path = rsyncPathDefault
 	}
 	fmt.Printf("%+v", AppConfig)
 }

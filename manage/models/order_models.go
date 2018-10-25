@@ -29,6 +29,8 @@ type Order struct {
 	// OrderNumber is OrderData's md5
 	OrderNumber string `gorm:"unique;not null"`
 	OrderData   string `gorm:"type:text"`
+	OrderTime   string
+	AddMonth    int
 	Quantity    int
 	Product     Product
 	ProductID   uint

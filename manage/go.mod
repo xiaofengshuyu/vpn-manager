@@ -15,6 +15,7 @@ require (
 	github.com/tidwall/match v0.0.0-20171002075945-1731857f09b1 // indirect
 	github.com/valyala/fasthttp v1.0.0
 	golang.org/x/crypto v0.0.0-20181001203147-e3636079e1a4
+	google.golang.org/appengine v1.2.0 // indirect
 	gopkg.in/go-playground/validator.v9 v9.21.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gopkg.in/yaml.v2 v2.2.1

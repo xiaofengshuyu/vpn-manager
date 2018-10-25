@@ -8,8 +8,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/jinzhu/gorm"
-
 	"github.com/xiaofengshuyu/vpn-manager/manage/common"
 	"github.com/xiaofengshuyu/vpn-manager/manage/config"
 	"github.com/xiaofengshuyu/vpn-manager/manage/models"
@@ -18,11 +16,12 @@ import (
 // apple url
 const (
 	AppleSandBoxURL = "https://sandbox.itunes.apple.com/verifyReceipt"
-	AppleOnlineURL  = ""
+	AppleOnlineURL  = "https://buy.itunes.apple.com/verifyReceipt "
+	retry           = 3
 )
 
 // GetOrderFromApple get order information from apple server
-func GetOrderFromApple(data string) (order models.Order, err error) {
+func GetOrderFromApple(data string) (orders []*models.Order, err error) {
 	// send request to server
 	receiptData := map[string]string{
 		"receipt-data": data,
@@ -35,15 +34,23 @@ func GetOrderFromApple(data string) (order models.Order, err error) {
 	} else {
 		reqURL = AppleSandBoxURL
 	}
-	res, err := http.Post(reqURL, "application/json;charset=utf-8", req)
+	var res *http.Response
+	for i := 0; i < retry; i++ {
+		res, err = http.Post(reqURL, "application/json;charset=utf-8", req)
+		if err == nil {
+			break
+		}
+	}
 	if err != nil {
 		logger.Error(err)
+		err = common.NewAppleServerAccessError(err)
 		return
 	}
 	defer res.Body.Close()
 	resData, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		logger.Error(err)
+		err = common.NewAppleServerAccessError(err)
 		return
 	}
 	logger.Debug(string(resData))
@@ -51,40 +58,48 @@ func GetOrderFromApple(data string) (order models.Order, err error) {
 	appleOrder := AppleOrder{}
 	err = json.Unmarshal(resData, &appleOrder)
 	if err != nil {
+		err = common.NewAppleDataInvalidError(err)
 		return
 	}
 
 	// apple check
 	if appleOrder.Status != 0 {
-		err = fmt.Errorf("order is invalid,status is %d", appleOrder.Status)
+		err = common.NewAppleDataInvalidError(fmt.Sprintf("order is invalid,status is %d", appleOrder.Status))
 		return
 	}
 	if appleOrder.Receipt.BundleID != config.AppConfig.AppleStore.BundleID {
-		err = fmt.Errorf("bundle id is invalid")
+		err = common.NewAppleDataInvalidError(fmt.Sprintf("bundle id is invalid"))
 		return
 	}
 	if len(appleOrder.Receipt.InApp) == 0 {
-		err = fmt.Errorf("in_app length is 0")
+		err = common.NewAppleDataInvalidError(fmt.Sprintf("in_app length is 0"))
 		return
 	}
-	// get order info
-	// get last order
-	lastOrder := appleOrder.Receipt.InApp[len(appleOrder.Receipt.InApp)-1]
-	order.OrderData = data
-	order.OrderNumber = lastOrder.TransactionID
-	order.Quantity, _ = strconv.Atoi(lastOrder.Quantity)
+	// get all product
 	db := common.DB
-	product := &models.Product{Code: lastOrder.ProductID}
-	err = db.Where(product).First(product).Error
+	products := make([]*models.Product, 0)
+	err = db.Model(&models.Product{}).Find(&products).Error
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			err = common.NewResourcesNotFoundError(fmt.Sprintf("product %s not found", lastOrder.ProductID))
-		}
+		err = common.NewDBAccessError(err)
 		return
 	}
-	order.Product = *product
-	order.ProductID = product.ID
-
+	orders = make([]*models.Order, 0)
+	for _, item := range appleOrder.Receipt.InApp {
+		// check order
+		for _, prod := range products {
+			if item.ProductID == prod.Code {
+				order := &models.Order{
+					OrderNumber: item.TransactionID,
+					OrderData:   data,
+					OrderTime:   item.PurchaseDateMs,
+					ProductID:   prod.ID,
+				}
+				order.Quantity, _ = strconv.Atoi(item.Quantity)
+				order.AddMonth = order.Quantity * prod.Duration
+				orders = append(orders, order)
+			}
+		}
+	}
 	return
 }
 

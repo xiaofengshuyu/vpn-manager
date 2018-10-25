@@ -24,6 +24,9 @@ const (
 
 	ErrorCodeServer   = 10500 // 服务端错误
 	ErrorCodeDBAccess = 10501 // 数据库访问异常
+
+	ErrorCodeAppleServer      = 10601 // apple server 异常
+	ErrorCodeAppleDataInvalid = 10602 // apple data 异常
 )
 
 // BaseError base struct
@@ -167,6 +170,33 @@ func NewDBAccessError(msg ...interface{}) error {
 	err := &DBAccessError{}
 	err.ErrorCode = ErrorCodeDBAccess
 	err.err = pkgerrors.Errorf(fmt.Sprint(msg...))
+	return err
+}
+
+// AppleServerAccessError apple server error
+type AppleServerAccessError struct {
+	BaseError
+}
+
+// NewAppleServerAccessError new AppleServerAccessError error
+func NewAppleServerAccessError(msg ...interface{}) error {
+	err := &AppleServerAccessError{}
+	err.ErrorCode = ErrorCodeAppleServer
+	err.err = fmt.Errorf(fmt.Sprint(msg...))
+	return err
+
+}
+
+// AppleDataInvalidError apple data invalid
+type AppleDataInvalidError struct {
+	BaseError
+}
+
+// NewAppleDataInvalidError new AppleDataInvalidError error
+func NewAppleDataInvalidError(msg ...interface{}) error {
+	err := &AppleDataInvalidError{}
+	err.ErrorCode = ErrorCodeAppleDataInvalid
+	err.err = fmt.Errorf(fmt.Sprint(msg...))
 	return err
 }
 

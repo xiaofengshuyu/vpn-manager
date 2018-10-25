@@ -1,0 +1,19 @@
+version: '3'
+services:
+  vpn_node:
+    build: ./node
+    environment:
+      RSYNC_HOST: ${RSYNC_HOST}
+      RSYNC_USERNAME: ${RSYNC_USERNAME}
+      RSYNC_PASSWORD: ${RSYNC_PASSWORD}
+      RSYNC_MODULE: "data"
+      RSYNC_ENABLE: "true"
+    ports:
+      - "500:500/udp"
+      - "4500:4500/udp"
+    privileged: true
+    hostname: ipsec-vpn-server
+    container_name: ipsec-vpn-server
+    volumes:
+      - /lib/modules:/lib/modules:ro
+      

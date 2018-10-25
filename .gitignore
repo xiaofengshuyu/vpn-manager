@@ -17,4 +17,4 @@
 /manage/vendor
 /manage/manage
 /manage/main
-/.env
+*.env
