@@ -9,7 +9,7 @@ import (
 
 // Service FAQ service
 type Service interface {
-	GetFrequentAskedQuestions(ctx context.Context) (faqs []models.FrequentQuestions, err error)
+	GetFrequentAskedQuestions(ctx context.Context, language string) (faqs []models.FrequentQuestions, err error)
 	PushFeedBack(ctx context.Context, fb models.Feedback) (err error)
 	GetFeedBack(ctx context.Context) (feedBacks []models.Feedback, err error)
 }
@@ -19,9 +19,9 @@ type BaseFAQService struct {
 }
 
 // GetFrequentAskedQuestions return enabled frequent asked questions
-func (s *BaseFAQService) GetFrequentAskedQuestions(ctx context.Context) (faqs []models.FrequentQuestions, err error) {
+func (s *BaseFAQService) GetFrequentAskedQuestions(ctx context.Context, language string) (faqs []models.FrequentQuestions, err error) {
 	db := common.DB
-	err = db.Where("status = ?", models.FAQStatusPublish).Find(&faqs).Error
+	err = db.Where("status = ? and language = ?", models.FAQStatusPublish, language).Find(&faqs).Error
 	if err != nil {
 		err = common.NewDBAccessError(err)
 		return

@@ -1,6 +1,10 @@
 package models
 
-import "github.com/jinzhu/gorm"
+import (
+	"strings"
+
+	"github.com/jinzhu/gorm"
+)
 
 // FAQ status
 const (
@@ -14,6 +18,7 @@ type FrequentQuestions struct {
 	Question string
 	Answer   string
 	Status   int
+	Language string
 }
 
 // feedback status
@@ -30,4 +35,21 @@ type Feedback struct {
 	Email    string
 	Phone    string
 	Status   int
+}
+
+// GetLanguage get language
+func GetLanguage(src string) (lang string) {
+	s := strings.ToLower(src)
+	switch s {
+	case "en", "en-us":
+		lang = "en"
+	case "zh-cn":
+		lang = "zh-cn"
+	default:
+		lang = "en"
+	}
+	if strings.HasPrefix(src, "ar") {
+		lang = "ar"
+	}
+	return
 }

@@ -5,6 +5,7 @@ import (
 
 	"github.com/valyala/fasthttp"
 	"github.com/xiaofengshuyu/vpn-manager/manage/common"
+	"github.com/xiaofengshuyu/vpn-manager/manage/models"
 )
 
 // Handler faq handler
@@ -15,7 +16,9 @@ type Handler struct {
 
 // GetFAQ get frequent asked questions
 func (h *Handler) GetFAQ(ctx *fasthttp.RequestCtx) {
-	data, err := h.Service.GetFrequentAskedQuestions(context.Background())
+	languageHeader := ctx.Request.Header.Peek("Accept-Language")
+	lang := models.GetLanguage(string(languageHeader))
+	data, err := h.Service.GetFrequentAskedQuestions(context.Background(), lang)
 	if err != nil {
 		h.WriteJSON(ctx, nil, err)
 		return
