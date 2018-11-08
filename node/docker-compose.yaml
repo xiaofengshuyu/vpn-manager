@@ -8,6 +8,9 @@ services:
       RSYNC_PASSWORD: ${RSYNC_PASSWORD}
       RSYNC_MODULE: "data"
       RSYNC_ENABLE: "true"
+      VPN_IPSEC_PSK: ${VPN_IPSEC_PSK}
+      VPN_USER: ${VPN_USER}
+      VPN_PASSWORD: ${VPN_PASSWORD}
     ports:
       - "500:500/udp"
       - "4500:4500/udp"
